@@ -1,9 +1,5 @@
 [[headers]]
   for = "/*"
   [headers.values]
-    Content-Security-Policy = """
-      default-src 'self';
-      script-src 'self' 'unsafe-inline' https://unpkg.com https://www.gstatic.com https://cdn.tailwindcss.com;
-      style-src 'self' 'unsafe-inline';
-      connect-src 'self' https://*.firebaseio.com https://random-word-api.herokuapp.com;
-    """
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://unpkg.com https://www.gstatic.com https://cdn.tailwindcss.com; style-src 'self' 'unsafe-inline' https://unpkg.com; connect-src 'self' https://*.firebaseio.com https://random-word-api.herokuapp.com; font-src 'self' data:;"
+
