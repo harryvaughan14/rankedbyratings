@@ -751,7 +751,7 @@
               e('div', { key: 'd', className: 'diamond' }),
               e('span', { key: 'r' })
             ]),
-            e('p', { key: 'subtitle' }, 'Rate today\'s object with the community')
+            e('p', { key: 'subtitle' }, 'Rate today\'s noun with the community')
           ]),
 
           // VOTING CARD
@@ -803,7 +803,7 @@
                     key: 'comment',
                     value: comment,
                     onChange: (ev) => setComment(ev.target.value),
-                    placeholder: 'Share your observations on this object...',
+                    placeholder: 'Share your observations on this noun...',
                     rows: 3
                   }),
                   e('button', {
@@ -816,7 +816,7 @@
               : e('div', { key: 'voted', className: 'voted' }, [
                   e('div', { key: 'mark', className: 'voted-mark' }, '📜'),
                   e('p', { key: 'title', className: 'voted-title' }, 'Your verdict has been recorded.'),
-                  e('p', { key: 'subtitle', className: 'voted-subtitle' }, 'Return tomorrow for a new object to appraise.')
+                  e('p', { key: 'subtitle', className: 'voted-subtitle' }, 'Return tomorrow for a new noun to appraise.')
                 ])
           ]),
 
@@ -889,4 +889,5 @@
   </script>
 </body>
 </html>
+
 
