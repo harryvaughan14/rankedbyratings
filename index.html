@@ -4,68 +4,520 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Ranked by Ratings</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js" defer></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js" defer></script>
   <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js" defer></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" defer></script>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap');
+
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
-    .app { min-height: 100vh; background: linear-gradient(135deg, #a855f7 0%, #ec4899 100%); padding: 16px; }
-    .container { max-width: 896px; margin: 0 auto; }
-    .header { text-align: center; margin-bottom: 32px; padding-top: 32px; }
-    .header h1 { font-size: 48px; font-weight: bold; color: white; margin-bottom: 8px; }
-    .header p { color: #e9d5ff; font-size: 18px; }
-    .card { background: white; border-radius: 16px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); padding: 32px; margin-bottom: 24px; }
-    .object-header { text-align: center; margin-bottom: 32px; }
-    .emoji { font-size: 60px; margin-bottom: 16px; }
-    .object-name { font-size: 36px; font-weight: bold; color: #9333ea; margin-bottom: 8px; }
-    .date { color: #6b7280; }
-    .category { margin-bottom: 24px; }
-    .category-label { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-    .category-name { font-size: 18px; font-weight: 600; color: #374151; }
-    .category-value { font-size: 24px; font-weight: bold; color: #9333ea; }
-    .slider { width: 100%; height: 12px; border-radius: 8px; outline: none; -webkit-appearance: none; cursor: pointer; }
-    .slider::-webkit-slider-thumb { -webkit-appearance: none; width: 24px; height: 24px; border-radius: 50%; background: #9333ea; cursor: pointer; }
-    .slider::-moz-range-thumb { width: 24px; height: 24px; border-radius: 50%; background: #9333ea; cursor: pointer; border: none; }
-    .scale { display: flex; justify-content: space-between; font-size: 12px; color: #6b7280; margin-top: 4px; }
-    .comment-label { font-size: 18px; font-weight: 600; color: #374151; margin-bottom: 12px; display: block; }
-    textarea { width: 100%; padding: 16px; border: 2px solid #e5e7eb; border-radius: 8px; resize: none; font-family: inherit; font-size: 14px; }
-    textarea:focus { outline: none; border-color: #9333ea; }
-    .submit-btn { width: 100%; padding: 16px; background: linear-gradient(90deg, #a855f7 0%, #ec4899 100%); color: white; font-size: 18px; font-weight: bold; border-radius: 8px; border: none; cursor: pointer; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
-    .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; background: #9ca3af; }
-    .voted { text-align: center; padding: 32px 0; }
-    .voted .emoji { font-size: 60px; margin-bottom: 16px; }
-    .voted-title { font-size: 20px; font-weight: 600; color: #374151; }
-    .voted-subtitle { color: #6b7280; margin-top: 8px; }
-    .rankings-title { font-size: 24px; font-weight: bold; color: #1f2937; margin-bottom: 24px; }
-    .ranking-item { display: flex; align-items: center; gap: 16px; padding: 16px; background: linear-gradient(90deg, #faf5ff 0%, #fce7f3 100%); border-radius: 8px; margin-bottom: 12px; }
-    .rank { font-size: 24px; font-weight: bold; min-width: 50px; }
-    .rank-1 { color: #eab308; }
-    .rank-2 { color: #9ca3af; }
-    .rank-3 { color: #ea580c; }
-    .rank-other { color: #6b7280; }
+
+    :root {
+      --oak: #5C3D1E;
+      --walnut: #3B2410;
+      --mahogany: #7B3F1E;
+      --brass: #B8860B;
+      --aged-brass: #A07830;
+      --cream: #F5EDD8;
+      --parchment: #EDE0C4;
+      --linen: #DDD0B0;
+      --iron: #4A4035;
+      --shadow: rgba(30,18,8,0.45);
+      --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23noise)' opacity='0.08'/%3E%3C/svg%3E");
+    }
+
+    body {
+      font-family: 'Crimson Text', Georgia, serif;
+      background-color: var(--walnut);
+      background-image:
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23noise)' opacity='0.12'/%3E%3C/svg%3E"),
+        repeating-linear-gradient(
+          92deg,
+          transparent,
+          transparent 2px,
+          rgba(255,255,255,0.01) 2px,
+          rgba(255,255,255,0.01) 4px
+        );
+      min-height: 100vh;
+      color: var(--cream);
+    }
+
+    .wood-top {
+      width: 100%;
+      height: 28px;
+      background: linear-gradient(180deg, #8B5E2E 0%, #6B4420 40%, #5C3D1E 100%);
+      border-bottom: 3px solid var(--brass);
+      box-shadow: 0 4px 12px var(--shadow);
+      position: relative;
+    }
+    .wood-top::after {
+      content: '';
+      position: absolute;
+      bottom: -6px;
+      left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, transparent, rgba(184,134,11,0.3), var(--brass), rgba(184,134,11,0.3), transparent);
+    }
+
+    .app {
+      padding: 24px 16px 48px;
+    }
+
+    .container {
+      max-width: 820px;
+      margin: 0 auto;
+    }
+
+    /* HEADER */
+    .header {
+      text-align: center;
+      margin-bottom: 36px;
+      padding-top: 20px;
+    }
+    .header-ornament {
+      font-size: 13px;
+      color: var(--aged-brass);
+      letter-spacing: 6px;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+    .header h1 {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 52px;
+      font-weight: 700;
+      color: var(--cream);
+      line-height: 1.1;
+      text-shadow: 2px 3px 8px var(--shadow);
+      letter-spacing: -0.5px;
+    }
+    .header h1 em {
+      font-style: italic;
+      color: var(--aged-brass);
+    }
+    .header-rule {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 12px auto 10px;
+      max-width: 320px;
+    }
+    .header-rule span {
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--aged-brass), transparent);
+    }
+    .header-rule .diamond {
+      width: 8px; height: 8px;
+      background: var(--brass);
+      transform: rotate(45deg);
+      flex-shrink: 0;
+    }
+    .header p {
+      color: var(--linen);
+      font-size: 19px;
+      font-style: italic;
+      opacity: 0.85;
+    }
+
+    /* CARD */
+    .card {
+      background: linear-gradient(160deg, #F7EDD5 0%, #EDE0C4 50%, #E5D4B2 100%);
+      border-radius: 2px;
+      border: 1px solid var(--aged-brass);
+      box-shadow:
+        0 2px 0 #a07030,
+        0 4px 0 #8a6020,
+        0 8px 0 #6b4820,
+        inset 0 0 60px rgba(100,60,10,0.08),
+        0 12px 40px rgba(0,0,0,0.5);
+      padding: 36px 40px;
+      margin-bottom: 32px;
+      position: relative;
+      color: var(--iron);
+      overflow: hidden;
+    }
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
+      pointer-events: none;
+      border-radius: 2px;
+    }
+
+    /* Brass corner brackets */
+    .card::after {
+      content: '';
+      position: absolute;
+      top: 10px; left: 10px; right: 10px; bottom: 10px;
+      border: 1px solid rgba(184,134,11,0.18);
+      border-radius: 1px;
+      pointer-events: none;
+    }
+
+    .brass-corner {
+      position: absolute;
+      width: 20px; height: 20px;
+      border-color: var(--brass);
+      border-style: solid;
+      opacity: 0.7;
+    }
+    .brass-corner.tl { top: 6px; left: 6px; border-width: 2px 0 0 2px; }
+    .brass-corner.tr { top: 6px; right: 6px; border-width: 2px 2px 0 0; }
+    .brass-corner.bl { bottom: 6px; left: 6px; border-width: 0 0 2px 2px; }
+    .brass-corner.br { bottom: 6px; right: 6px; border-width: 0 2px 2px 0; }
+
+    /* OBJECT HEADER */
+    .object-header {
+      text-align: center;
+      margin-bottom: 32px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid rgba(160,120,48,0.3);
+    }
+    .object-label {
+      font-size: 11px;
+      letter-spacing: 5px;
+      text-transform: uppercase;
+      color: var(--aged-brass);
+      margin-bottom: 10px;
+    }
+    .object-name {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 44px;
+      font-weight: 700;
+      color: var(--walnut);
+      margin-bottom: 6px;
+      line-height: 1.1;
+    }
+    .date-tag {
+      font-size: 13px;
+      color: #8B7355;
+      font-style: italic;
+      letter-spacing: 1px;
+    }
+
+    /* CATEGORY */
+    .category {
+      margin-bottom: 22px;
+    }
+    .category-label {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 8px;
+    }
+    .category-name {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--walnut);
+      letter-spacing: 0.3px;
+    }
+    .category-value {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--mahogany);
+      min-width: 36px;
+      text-align: right;
+    }
+
+    /* Custom slider with rustic look */
+    .slider-track {
+      position: relative;
+      height: 14px;
+      margin-bottom: 4px;
+    }
+    .slider {
+      width: 100%;
+      height: 14px;
+      border-radius: 2px;
+      outline: none;
+      -webkit-appearance: none;
+      cursor: pointer;
+      position: relative;
+      z-index: 1;
+      background: transparent;
+    }
+    .slider-bg {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      border-radius: 2px;
+      background: linear-gradient(180deg, #d4c49a 0%, #c8b888 100%);
+      border: 1px solid rgba(100,60,10,0.25);
+      box-shadow: inset 0 1px 3px rgba(0,0,0,0.2);
+      overflow: hidden;
+    }
+    .slider-fill {
+      position: absolute;
+      top: 0; left: 0; bottom: 0;
+      background: linear-gradient(180deg, #a07830 0%, #7B5220 100%);
+      border-radius: 2px 0 0 2px;
+      transition: width 0.1s;
+    }
+    .slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 22px; height: 22px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 35%, #d4a854, #b8860b 60%, #8a6008);
+      border: 2px solid #7a5008;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.4), inset 0 1px 2px rgba(255,220,100,0.3);
+      margin-top: -4px;
+    }
+    .slider::-moz-range-thumb {
+      width: 22px; height: 22px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 35%, #d4a854, #b8860b 60%, #8a6008);
+      border: 2px solid #7a5008;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+    }
+    .scale {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: #9b8860;
+      font-style: italic;
+    }
+
+    /* COMMENT */
+    .comment-label {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--walnut);
+      display: block;
+      margin-bottom: 10px;
+    }
+    textarea {
+      width: 100%;
+      padding: 14px 16px;
+      border: 1px solid rgba(100,60,10,0.3);
+      border-radius: 2px;
+      resize: none;
+      font-family: 'Crimson Text', Georgia, serif;
+      font-size: 16px;
+      background: linear-gradient(180deg, #faf3e0 0%, #f5edd0 100%);
+      color: var(--iron);
+      box-shadow: inset 0 1px 4px rgba(0,0,0,0.12);
+    }
+    textarea:focus {
+      outline: none;
+      border-color: var(--aged-brass);
+      box-shadow: inset 0 1px 4px rgba(0,0,0,0.12), 0 0 0 2px rgba(160,120,48,0.2);
+    }
+    textarea::placeholder { color: #b0a080; font-style: italic; }
+
+    /* SUBMIT BUTTON */
+    .submit-btn {
+      width: 100%;
+      padding: 16px;
+      background: linear-gradient(180deg, #8B5E2E 0%, #6B4420 50%, #5C3D1E 100%);
+      color: var(--cream);
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      border-radius: 2px;
+      border: 1px solid var(--brass);
+      cursor: pointer;
+      box-shadow: 0 3px 0 #3B2410, 0 6px 12px rgba(0,0,0,0.3);
+      transition: all 0.15s;
+      margin-top: 24px;
+      position: relative;
+    }
+    .submit-btn:hover:not(:disabled) {
+      background: linear-gradient(180deg, #9B6E3E 0%, #7B5430 50%, #6C4D2E 100%);
+      box-shadow: 0 2px 0 #3B2410, 0 4px 10px rgba(0,0,0,0.3);
+      transform: translateY(1px);
+    }
+    .submit-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      background: #9b9080;
+      border-color: #7b7060;
+      box-shadow: none;
+    }
+
+    /* VOTED STATE */
+    .voted {
+      text-align: center;
+      padding: 24px 0;
+    }
+    .voted-mark {
+      font-size: 48px;
+      margin-bottom: 14px;
+    }
+    .voted-title {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--walnut);
+    }
+    .voted-subtitle {
+      color: #8B7355;
+      font-style: italic;
+      font-size: 17px;
+      margin-top: 6px;
+    }
+
+    /* RANKINGS */
+    .rankings-title {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--walnut);
+      margin-bottom: 24px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid rgba(160,120,48,0.3);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .rankings-title::before,
+    .rankings-title::after {
+      content: '—';
+      color: var(--aged-brass);
+      font-weight: 400;
+    }
+
+    .ranking-item {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 14px 16px;
+      background: linear-gradient(90deg, rgba(92,61,30,0.07) 0%, rgba(92,61,30,0.03) 100%);
+      border: 1px solid rgba(160,120,48,0.2);
+      border-radius: 1px;
+      margin-bottom: 10px;
+      transition: background 0.2s;
+    }
+    .ranking-item:hover { background: linear-gradient(90deg, rgba(92,61,30,0.12) 0%, rgba(92,61,30,0.06) 100%); }
+
+    .rank {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 22px;
+      font-weight: 700;
+      min-width: 44px;
+      text-align: center;
+    }
+    .rank-1 { color: var(--brass); }
+    .rank-2 { color: #8a8888; }
+    .rank-3 { color: #a0663a; }
+    .rank-other { color: #a09070; }
+
     .item-info { flex: 1; }
-    .item-name { font-weight: bold; font-size: 18px; color: #1f2937; }
-    .item-meta { font-size: 14px; color: #6b7280; margin-top: 2px; }
-    .score { font-size: 24px; font-weight: bold; color: #9333ea; }
-    .loading { min-height: 100vh; background: linear-gradient(135deg, #a855f7 0%, #ec4899 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 24px; }
-    .empty { text-align: center; color: #6b7280; padding: 32px 0; }
-    .comments-toggle { margin-top: 12px; width: 100%; padding: 12px; background: #f3f4f6; border: 2px solid #e5e7eb; border-radius: 8px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-size: 14px; font-weight: 600; color: #374151; }
-    .comments-toggle:hover { background: #e5e7eb; }
-    .comments-toggle .arrow { transition: transform 0.2s; }
+    .item-name {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 19px;
+      font-weight: 700;
+      color: var(--walnut);
+    }
+    .item-meta {
+      font-size: 14px;
+      color: #8B7355;
+      font-style: italic;
+      margin-top: 2px;
+    }
+    .score {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--mahogany);
+    }
+
+    /* COMMENTS */
+    .comments-toggle {
+      margin-top: 6px;
+      width: 100%;
+      padding: 10px 14px;
+      background: rgba(92,61,30,0.06);
+      border: 1px solid rgba(160,120,48,0.2);
+      border-radius: 1px;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: 'Crimson Text', Georgia, serif;
+      font-size: 15px;
+      font-style: italic;
+      color: #8B7355;
+      transition: background 0.15s;
+    }
+    .comments-toggle:hover { background: rgba(92,61,30,0.1); }
+    .comments-toggle .arrow { transition: transform 0.2s; font-style: normal; font-size: 11px; }
     .comments-toggle .arrow.open { transform: rotate(180deg); }
-    .comments-list { margin-top: 8px; border: 2px solid #e5e7eb; border-radius: 8px; background: #f9fafb; padding: 16px; max-height: 300px; overflow-y: auto; }
-    .comment-item { padding: 12px; background: white; border-radius: 6px; margin-bottom: 8px; border-left: 3px solid #9333ea; }
+
+    .comments-list {
+      margin-top: 6px;
+      border: 1px solid rgba(160,120,48,0.2);
+      border-radius: 1px;
+      background: rgba(250,243,224,0.5);
+      padding: 14px;
+      max-height: 280px;
+      overflow-y: auto;
+    }
+
+    .comment-item {
+      padding: 10px 12px;
+      background: rgba(255,252,240,0.8);
+      border-radius: 1px;
+      margin-bottom: 8px;
+      border-left: 3px solid var(--aged-brass);
+    }
     .comment-item:last-child { margin-bottom: 0; }
-    .comment-ratings { display: flex; gap: 12px; flex-wrap: wrap; font-size: 12px; color: #6b7280; margin-bottom: 8px; }
-    .comment-rating { background: #f3f4f6; padding: 4px 8px; border-radius: 4px; }
-    .comment-text { color: #1f2937; font-size: 14px; line-height: 1.5; }
-    .comment-date { font-size: 11px; color: #9ca3af; margin-top: 8px; }
-    .no-comments { text-align: center; color: #9ca3af; font-size: 14px; padding: 16px; }
+
+    .comment-ratings {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      font-size: 12px;
+      color: #8B7355;
+      margin-bottom: 6px;
+    }
+    .comment-rating {
+      background: rgba(92,61,30,0.08);
+      padding: 2px 7px;
+      border-radius: 1px;
+      font-style: italic;
+    }
+    .comment-text { color: var(--iron); font-size: 15px; line-height: 1.5; }
+    .comment-date { font-size: 11px; color: #b0a070; margin-top: 6px; font-style: italic; }
+    .no-comments { text-align: center; color: #b0a070; font-size: 15px; padding: 14px; font-style: italic; }
+    .empty { text-align: center; color: #8B7355; padding: 28px 0; font-style: italic; font-size: 17px; }
+
+    .loading {
+      min-height: 100vh;
+      background: var(--walnut);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--cream);
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 26px;
+      font-style: italic;
+      letter-spacing: 2px;
+    }
+
+    .divider-rule {
+      border: none;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(160,120,48,0.4), transparent);
+      margin: 24px 0;
+    }
+
+    /* Scrollbar styling */
+    .comments-list::-webkit-scrollbar { width: 6px; }
+    .comments-list::-webkit-scrollbar-track { background: rgba(92,61,30,0.1); }
+    .comments-list::-webkit-scrollbar-thumb { background: var(--aged-brass); border-radius: 2px; }
   </style>
 </head>
 <body>
+  <div class="wood-top"></div>
   <div id="root"></div>
   
   <script defer>
@@ -84,7 +536,6 @@
     
     const CATEGORIES = ['Utility', 'Aesthetic', 'Cultural Impact', 'Innovation', 'Sustainability'];
     
-    // Embedded list of common English nouns - filter out abstract/uncommon ones
     const NOUNS = ["time","year","way","day","thing","child","work","life","woman","system","case","part","group","number","world","house","area","company","problem","place","hand","party","school","country","point","week","member","end","word","family","fact","head","month","side","business","night","eye","home","question","power","change","money","book","water","form","room","level","car","market","result","idea","study","job","body","report","line","face","road","door","hour","office","war","mother","person","reason","view","term","period","figure","city","community","type","subject","girl","moment","age","father","order","value","matter","health","decision","street","patient","class","mind","church","paper","bank","century","table","building","sense","team","experience","student","language","town","plan","morning","product","ground","letter","meeting","foot","boy","game","food","role","event","art","stage","teacher","voice","arm","club","field","history","parent","material","care","manager","project","example","window","air","university","wife","quality","story","tax","worker","data","model","nature","structure","bed","hospital","method","detail","wall","computer","amount","bit","son","director","leader","application","board","king","secretary","chance","operation","share","contract","picture","test","security","election","source","future","site","shop","animal","evening","heart","purpose","page","doctor","factor","hair","love","music","design","piece","tree","knowledge","plant","fire","environment","garden","size","rest","success","thought","attention","list","space","statement","sea","step","choice","couple","hotel","player","station","village","film","attempt","feature","income","cup","effort","technology","machine","cell","degree","growth","treatment","lady","mile","county","function","task","top","resource","floor","science","style","college","feeling","hall","horse","response","skill","character","answer","dog","economy","investment","brother","husband","season","bill","element","glass","increase","leg","park","title","note","chairman","discussion","summer","baby","daughter","sun","box","customer","river","profit","division","stone","post","client","help","image","oil","attack","direction","seat","disease","goal","sign","ability","campaign","fish","holiday","item","pupil","show","technique","advice","drug","library","press","visit","surface","blood","culture","island","memory","television","competition","parliament","talk","access","deal","star","text","cause","mouth","payment","trouble","facility","survey","article","chair","earth","importance","object","card","collection","communication","document","sister","supply","budget","career","solution","weight","bird","damage","district","fear","opinion","requirement","rock","call","edge","exchange","option","quarter","stock","aid","concept","match","network","occasion","radio","railway","target","corner","finger","forest","race","sex","afternoon","ball","crime","employee","equipment","kitchen","message","peace","review","scale","scene","speech","sport","strategy","band","expression","failure","hill","partner","reader","shoulder","tea","marriage","owner","trust","truth","farm","file","newspaper","past","safety","sentence","trial","balance","branch","copy","league","length","nation","wind","accident","doubt","front","pain","spirit","train","strength","cash","debate","gas","museum","reform","transport","agent","artist","pair","protection","rise","candidate","driver","hope","master","meaning","queen","vote","adult","consequence","exercise","play","beginning","route","speed","credit","impact","understanding","danger","flower","path","track","video","aim","bag","belief","comment","conclusion","content","distance","gold","link","skin","boat","dad","estate","prison","reality","sight","wine","winter","debt","employer","objective","offer","vehicle","weekend","writer","battle","colleague","expert","farmer","hole","injury","package","telephone","confidence","generation","insurance","key","painting","phone","sample","conflict","drink","judge","ship","threat","visitor","volume","author","background","cabinet","engine","entry","manner","smile","stuff","victim","yard","bus","coffee","investigation","mountain","regulation","relief","row","song","wage","category","consumer","dinner","exhibition","football","interview","meal","tour","tradition","traffic","wood","appearance","bridge","construction","contrast","description","distribution","flat","gentleman","housing","improvement","session","sheet","audience","code","conversation","crisis","loan","prince","theatre","explanation","flight","freedom","limit","magazine","pension","plate","rain","respect","writing","capacity","challenge","dream","factory","finance","selection","spring","victory","youth","aircraft","decade","definition","egg","examination","intention","mark","notice","output","reduction","address","appointment","bedroom","bottom","enterprise","kid","middle","neck","tape","weapon","birth","bottle","ear","error","instruction","store","teaching","wave","channel","component","desire","grant","lead","lunch","photograph","pleasure","recognition","temperature","waste","weather","block","brain","experiment","guest","guide","household","nurse","program","screen","silence","captain","connection","cover","crowd","journey","map","metal","noise","phase","pool","scientist","search","sequence","sky","trip","violence","cat","display","gallery","gate","gun","heat","instrument","location","professor","theme","combination","drive","faith","interpretation","learning","opening","priority","spot","tool","tooth","alternative","breath","castle","coal","crown","flow","lane","literature","mistake","motion","release","revenue","variation","wing","border","incident","index","passage","pocket","ring","suggestion","valley","winner","characteristic","deputy","device","engineering","foundation","fruit","lake","leaf","pub","religion","restaurant","specialist","square","surprise","tone","walk","chain","circle","creation","fall","observation","shot","strike","atmosphere","championship","coast","desk","enemy","fashion","god","impression","leadership","marketing","mass","mechanism","neighbour","panel","revolution","tear","advance","beach","drawing","dress","engineer","establishment","fan","iron","milk","motor","nose","origin","roof","servant","shoe","soil","tank","ticket","welfare","bone","cancer","champion","chief","citizen","editor","expense","fuel","gift","height","palace","prisoner","significance","trend","vision","warning","achievement","comparison","cross","democracy","diet","knee","lawyer","lesson","living","outcome","rail","signal","breakfast","charity","column","complaint","gap","grass","manufacturer","passenger","plane","plastic","root","score","shadow","shock","territory","touch","accommodation","beauty","boundary","buyer","database","dispute","exception","identity","mirror","novel","phrase","pilot","preparation","quantity","taste","tension","thinking","coat","extension","gene","partnership","pollution","prize","stress","tower","boot","command","decline","delivery","depth","frame","framework","holder","ice","inch","poem","port","protein","rose","saving","string","wheel","approval","bishop","boss","chest","cottage","crew","cycle","export","funding","governor","hat","load","profession","protest","recommendation","restriction","stairs","travel","agriculture","autumn","average","bomb","camera","creature","critic","empire","focus","guard","habit","input","inspector","landscape","layer","poll","purchase","recession","recovery","reputation","silver","sleep","suit","trading","arrival","beer","bread","cake","drama","efficiency","electricity","illness","judgment","laboratory","meat","muscle","peak","penalty","perspective","presentation","steel","sugar","uncle","abuse","alliance","angle","bay","certificate","cloud","coach","custom","dollar","expansion","mood","personality","philosophy","possession","producer","promotion","ratio","spending","symptom","variable","zone","actor","awareness","bond","chamber","chip","cigarette","core","deposit","dozen","estimate","festival","frequency","gain","guy","honour","jacket","phenomenon","qualification","relative","rent","reply","researcher","secret","shirt","tendency","wedding","apple","breach","dance","dealer","discovery","duke","emotion","equation","furniture","instance","intelligence","investor","landlord","mixture","pipe","promise","recording","retirement","routine","substance","throat","tourist","allowance","anger","birthday","carpet","consent","cricket","curtain","curve","darkness","disaster","disk","enquiry","entrance","fight","golf","guitar","hearing","hero","infection","interaction","journal","knife","mail","medicine","mortgage","pace","paragraph","permission","platform","policeman","print","rank","reserve","sand","scope","shift","stream","tale","witness","acquisition","adviser","airport","aunt","bath","chemical","circuit","clock","consumption","cream","defeat","delay","demonstration","edition","host","human","joke","perception","priest","province","sake","salt","anxiety","compensation","consultant","fishing","formula","journalist","lecture","luck","mission","occupation","pack","percentage","poet","seed","supplier","survival","tail","tie","watch","workshop","alcohol","barrier","climate","crop","fortune","heaven","indication","measurement","mine","moon","observer","opponent","ownership","pitch","prayer","preference","smell","snow","stomach","symbol","tip","architecture","bowl","burden","cheese","confusion","dimension","dish","enthusiasm","evaluation","historian","implementation","interval","operator","princess","publisher","satisfaction","schedule","sheep","shell","storage","summary","talent","tube","wish","admission","breast","childhood","consultation","designer","determination","drop","fabric","import","label","leisure","lover","merchant","poetry","pot","proof","replacement","salary","shopping","smoke","squad","stake","steam","strain","tissue","tunnel","unity","vessel","wire","addition","amendment","announcement","bathroom","bell","brick","classroom","comfort","complex","conviction","corridor","draft","favour","grade","imagination","lift","mouse","movie","mystery","participant","profile","refugee","reward","sergeant","surgery","tongue","vegetable","acceptance","architect","assistant","belt","cathedral","ceiling","check","composition","deficit","departure","detective","excitement","gesture","joy","limitation","participation","pit","pride","register","storm","summit","transition","treasury","twin","universe","venture","weakness","album","bench","button","canal","cap","chart","clerk","coalition","coin","concert","consciousness","constraint","cow","diary","dust","expertise","fellow","glance","grammar","guardian","guideline","horror","infant","leather","margin","objection","opera","paint","passion","pole","prosecution","psychology","reception","repair","shelf","stand","stick","timber","tin","uncertainty","virtue","ward","agenda","alarm","cable","carbon","charter","chicken","closure","companion","completion","conservation","cousin","craft","disorder","dividend","evolution","flesh","format","funeral","ideology","jury","kingdom","lease","mate","nerve","ocean","patch","pen","pig","portrait","potato","printer","privilege","punishment","rabbit","reflection","rival","specimen","taxation","traveller","van","volunteer","ally","applicant","assurance","attraction","audit","blow","chocolate","commander","commissioner","conversion","depression","destruction","disc","discount","earl","emperor","essay","exposure","favourite","friendship","garage","innovation","integration","junction","lock","machinery","maker","organ","particle","pass","petrol","planet","plot","rat","registration","remedy","resignation","seller","silk","slope","strip","sympathy","terrace","vendor","wonder","allocation","ambition","bike","calculation","chapel","collapse","conception","correspondent","cotton","crash","cry","declaration","directive","disposal","dose","entertainment","excuse","fate","federation","fibre","flame","grain","harm","humour","hypothesis","identification","incentive","inspection","interface","invitation","logic","mayor","mineral","molecule","mortality","needle","pile","resort","roll","rubbish","shade","stimulus","stranger","suspicion","trick","voter","withdrawal","youngster","accountant","advertisement","angel","arrest","ceremony","cinema","clinic","cloth","competitor","complexity","coverage","daddy","dictionary","disability","domain","equity","equivalent","explosion","fence","fragment","guarantee","insight","interior","isle","kit","lamp","leave","pond","processor","removal","rope","satellite","server","stability","statute","taxi","tide","adjustment","allegation","anniversary","banking","battery","bible","brand","bulk","butter","celebration","clothing","colony","controversy","crystal","delight","desert","emission","episode","escape","fiction","fighting","fleet","gaze","gear","grip","hardware","illustration","insect","invasion","jurisdiction","lion","merger","mess","minimum","monopoly","motive","myth","navy","necessity","nursery","photo","piano","raid","rebel","rhythm","shortage","specification","switch","temple","therapy","tournament","toy","transformation","tribunal","trustee","villa","wound","abbey","adventure","airline","attendance","businessman","champagne","cliff","clue","colonel","compound","counter","creditor","devil","disadvantage","discrimination","dock","doctrine","essence","filter","flag","flexibility","fraction","gang","gender","ghost","harbour","heel","heritage","hierarchy","hint","indicator","landing","launch","leaflet","lorry","loyalty","menu","mud","nail","outline","painter","pensioner","pope","productivity","proposition","receiver","refusal","restoration","ride","rumour","shore","singer","skirt","sociology","spectrum","successor","testing","theft","toilet","tragedy","triumph","uniform","verse","virus","warmth","widow","accent","analyst","apartment","appendix","availability","avenue","breed","builder","bureau","capitalism","carrier","classification","collector","compromise","continent","copper","crack","cupboard","defender","delegate","density","developer","diagnosis","dialogue","directory","discretion","doorway","duck","duration","envelope","fantasy","fluid","fool","forum","fraud","graduate","grave","heading","hip","installation","isolation","juice","justification","killer","kiss","laugh","liberty","lifetime","merit","midnight","missile","modification","musician","norm","oak","offender","oxygen","palm","pet","portfolio","premium","probability","receipt","recipe","reporter","residence","rod","sandwich","sculpture","seminar","sensation","separation","shame","shower","sin","speculation","stance","stroke","succession","suicide","sword","trace","truck","whisky","worry","ambulance","assignment","auditor","autonomy","basket","bean","bear","bonus","capability","clash","commonwealth","concession","correlation","coup","delegation","diagram","divorce","eagle","easter","entity","finish","glory","guilt","holding","horizon","hunting","incidence","ingredient","inn","instinct","jet","liberation","lung","motivation","nest","nightmare","organism","packet","panic","pause","pavement","pity","pregnancy","radiation","redundancy","reign","riot","scandal","scholar","spell","sphere","spread","subsidiary","subsidy","swimming","tactic","teenager","thesis","timing","trader","trainer","tray","tune","tutor","wool","accuracy","archbishop","beam","blade","blanket","boom","bronze","brush","bush","cab","casualty","clay","constituent","contest","counterpart","deck","diamond","disappointment","dismissal","engagement","exclusion","execution"];
 
     function DailyRanker() {
@@ -129,6 +580,7 @@
         }
       };
 
+      // NEW: generates a non-repeating noun by checking all previously used nouns
       const generateDailyObject = async (dateKey) => {
         try {
           const db = firebase.database();
@@ -138,20 +590,32 @@
           if (snapshot.exists()) {
             return snapshot.val().noun;
           }
-          
-          // Pick a random noun using the date as seed for consistency
+
+          // Fetch all previously used nouns to avoid repeats
+          const allDailySnapshot = await db.ref('dailyObjects').once('value');
+          const allDailyData = allDailySnapshot.val() || {};
+          const usedNouns = new Set(
+            Object.values(allDailyData).map(entry => entry.noun ? entry.noun.toLowerCase() : '')
+          );
+
+          // Filter the noun list to only unused nouns
+          const availableNouns = NOUNS.filter(noun => !usedNouns.has(noun.toLowerCase()));
+
+          // If we've exhausted all nouns, reset and use full list
+          const poolToUse = availableNouns.length > 0 ? availableNouns : NOUNS;
+
+          // Use the date as a deterministic seed to pick from the available pool
           const hash = dateKey.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-          const randomIndex = hash % NOUNS.length;
-          let noun = NOUNS[randomIndex];
-          
+          const randomIndex = hash % poolToUse.length;
+          let noun = poolToUse[randomIndex];
+
           // Capitalize first letter
           noun = noun.charAt(0).toUpperCase() + noun.slice(1);
           
           await todayObjectRef.set({ noun: noun, date: dateKey, timestamp: Date.now() });
           return noun;
         } catch (error) {
-          console.error('Error:', error);
-          // Fallback
+          console.error('Error generating daily object:', error);
           const hash = dateKey.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
           return NOUNS[hash % NOUNS.length];
         }
@@ -162,12 +626,10 @@
           const db = firebase.database();
           const votesSnapshot = await db.ref('votes/' + objectName).once('value');
           const votesData = votesSnapshot.val();
-          
           if (votesData) {
-            const commentsArray = Object.values(votesData)
+            return Object.values(votesData)
               .filter(vote => vote.comment && vote.comment.trim() !== '')
               .sort((a, b) => b.timestamp - a.timestamp);
-            return commentsArray;
           }
           return [];
         } catch (error) {
@@ -207,7 +669,6 @@
 
           const rankingsSnapshot = await db.ref('rankings').once('value');
           const rankingsData = rankingsSnapshot.val();
-          
           if (rankingsData) {
             const rankingsArray = Object.values(rankingsData).sort((a, b) => b.avgRating - a.avgRating);
             setAllRankings(rankingsArray);
@@ -229,7 +690,6 @@
         }
 
         const todayKey = getTodayKey();
-        
         try {
           const db = firebase.database();
           const objectRef = db.ref('objects/' + currentObject);
@@ -261,7 +721,6 @@
 
           await db.ref('userVotes/' + userId + '/' + todayKey).set(true);
           await loadData();
-          
           setRatings({});
           setComment('');
         } catch (error) {
@@ -271,123 +730,155 @@
       };
 
       if (loading) {
-        return e('div', { className: 'loading' }, 'Loading...');
+        return e('div', { className: 'loading' }, 'Opening the wardrobe...');
       }
+
+      const allRated = Object.keys(ratings).length === CATEGORIES.length;
 
       return e('div', { className: 'app' },
         e('div', { className: 'container' }, [
+
+          // HEADER
           e('div', { key: 'header', className: 'header' }, [
-            e('h1', { key: 'title' }, 'Ranked by Ratings'),
-            e('p', { key: 'subtitle' }, 'Rate today\'s random object with the community')
-          ]),
-          
-          e('div', { key: 'voting', className: 'card' }, [
-            e('div', { key: 'object-header', className: 'object-header' }, [
-              e('div', { key: 'emoji', className: 'emoji' }, '📦'),
-              e('h3', { key: 'name', className: 'object-name' }, currentObject),
-              e('p', { key: 'date', className: 'date' }, getTodayKey())
+            e('div', { key: 'ornament', className: 'header-ornament' }, '✦ Daily Object Review ✦'),
+            e('h1', { key: 'title' }, [
+              'Ranked ',
+              e('em', { key: 'by' }, 'by'),
+              ' Ratings'
             ]),
-            
-            !hasVotedToday ? e('div', { key: 'form' }, [
-              e('div', { key: 'categories' },
-                CATEGORIES.map((category, idx) => 
-                  e('div', { key: category, className: 'category' }, [
-                    e('div', { key: 'label', className: 'category-label' }, [
-                      e('span', { key: 'name', className: 'category-name' }, category),
-                      e('span', { key: 'value', className: 'category-value' }, ratings[category] || 0)
-                    ]),
-                    e('input', {
-                      key: 'slider',
-                      type: 'range',
-                      min: 0,
-                      max: 100,
-                      value: ratings[category] || 0,
-                      onChange: (ev) => handleRatingChange(category, parseInt(ev.target.value)),
-                      className: 'slider',
-                      style: { background: 'linear-gradient(to right, #a855f7 0%, #a855f7 ' + (ratings[category] || 0) + '%, #e5e7eb ' + (ratings[category] || 0) + '%, #e5e7eb 100%)' }
-                    }),
-                    e('div', { key: 'scale', className: 'scale' }, [
-                      e('span', { key: '0' }, '0'),
-                      e('span', { key: '50' }, '50'),
-                      e('span', { key: '100' }, '100')
-                    ])
-                  ])
-                )
-              ),
-              e('label', { key: 'comment-label', className: 'comment-label' }, 'Comment (Optional)'),
-              e('textarea', {
-                key: 'comment',
-                value: comment,
-                onChange: (ev) => setComment(ev.target.value),
-                placeholder: 'Share your thoughts...',
-                rows: 3
-              }),
-              e('button', {
-                key: 'submit',
-                onClick: handleSubmit,
-                disabled: Object.keys(ratings).length !== CATEGORIES.length,
-                className: 'submit-btn',
-                style: { marginTop: '24px' }
-              }, 'Submit Ratings')
-            ]) : e('div', { key: 'voted', className: 'voted' }, [
-              e('div', { key: 'emoji', className: 'emoji' }, '✅'),
-              e('p', { key: 'title', className: 'voted-title' }, 'You\'ve voted today!'),
-              e('p', { key: 'subtitle', className: 'voted-subtitle' }, 'Come back tomorrow for a new object')
-            ])
+            e('div', { key: 'rule', className: 'header-rule' }, [
+              e('span', { key: 'l' }),
+              e('div', { key: 'd', className: 'diamond' }),
+              e('span', { key: 'r' })
+            ]),
+            e('p', { key: 'subtitle' }, 'Rate today\'s object with the community')
           ]),
-          
-          e('div', { key: 'rankings', className: 'card' }, [
-            e('h2', { key: 'title', className: 'rankings-title' }, 'All-Time Rankings'),
-            allRankings.length === 0 ? 
-              e('p', { key: 'empty', className: 'empty' }, 'No rankings yet. Be the first to vote!') :
-              e('div', { key: 'list' },
-                allRankings.map((item, index) =>
-                  e('div', { key: item.name }, [
-                    e('div', { key: 'item', className: 'ranking-item' }, [
-                      e('div', { 
-                        key: 'rank',
-                        className: 'rank ' + (index === 0 ? 'rank-1' : index === 1 ? 'rank-2' : index === 2 ? 'rank-3' : 'rank-other')
-                      }, '#' + (index + 1)),
-                      e('div', { key: 'info', className: 'item-info' }, [
-                        e('div', { key: 'name', className: 'item-name' }, item.name),
-                        e('div', { key: 'meta', className: 'item-meta' }, item.totalVotes + ' ' + (item.totalVotes === 1 ? 'vote' : 'votes') + ' • ' + item.date)
-                      ]),
-                      e('span', { key: 'score', className: 'score' }, item.avgRating.toFixed(1))
-                    ]),
-                    e('button', {
-                      key: 'toggle',
-                      className: 'comments-toggle',
-                      onClick: () => toggleComments(item.name)
-                    }, [
-                      e('span', { key: 'text' }, 
-                        (objectComments[item.name] ? objectComments[item.name].length : '...') + ' ' + 
-                        'comment' + ((objectComments[item.name] && objectComments[item.name].length !== 1) ? 's' : '')
-                      ),
-                      e('span', { 
-                        key: 'arrow', 
-                        className: 'arrow' + (expandedComments[item.name] ? ' open' : '')
-                      }, '▼')
-                    ]),
-                    expandedComments[item.name] && e('div', { key: 'comments', className: 'comments-list' },
-                      objectComments[item.name] && objectComments[item.name].length > 0 ?
-                        objectComments[item.name].map((commentData, idx) =>
-                          e('div', { key: idx, className: 'comment-item' }, [
-                            e('div', { key: 'ratings', className: 'comment-ratings' },
-                              CATEGORIES.map(cat =>
-                                e('span', { key: cat, className: 'comment-rating' },
-                                  cat + ': ' + (commentData.ratings[cat] || 0)
-                                )
-                              )
-                            ),
-                            commentData.comment && e('div', { key: 'text', className: 'comment-text' }, commentData.comment),
-                            e('div', { key: 'date', className: 'comment-date' }, formatDate(commentData.timestamp))
-                          ])
-                        ) :
-                        e('div', { key: 'no-comments', className: 'no-comments' }, 'No comments yet')
+
+          // VOTING CARD
+          e('div', { key: 'voting', className: 'card' }, [
+            e('div', { key: 'tl', className: 'brass-corner tl' }),
+            e('div', { key: 'tr', className: 'brass-corner tr' }),
+            e('div', { key: 'bl', className: 'brass-corner bl' }),
+            e('div', { key: 'br', className: 'brass-corner br' }),
+
+            e('div', { key: 'object-header', className: 'object-header' }, [
+              e('div', { key: 'label', className: 'object-label' }, "Today's Object"),
+              e('h3', { key: 'name', className: 'object-name' }, currentObject),
+              e('p', { key: 'date', className: 'date-tag' }, getTodayKey())
+            ]),
+
+            !hasVotedToday
+              ? e('div', { key: 'form' }, [
+                  e('div', { key: 'categories' },
+                    CATEGORIES.map(category =>
+                      e('div', { key: category, className: 'category' }, [
+                        e('div', { key: 'label', className: 'category-label' }, [
+                          e('span', { key: 'name', className: 'category-name' }, category),
+                          e('span', { key: 'value', className: 'category-value' }, ratings[category] !== undefined ? ratings[category] : '—')
+                        ]),
+                        e('div', { key: 'track', className: 'slider-track' }, [
+                          e('div', { key: 'bg', className: 'slider-bg' }, [
+                            e('div', { key: 'fill', className: 'slider-fill', style: { width: (ratings[category] || 0) + '%' } })
+                          ]),
+                          e('input', {
+                            key: 'slider',
+                            type: 'range',
+                            min: 0, max: 100,
+                            value: ratings[category] || 0,
+                            onChange: (ev) => handleRatingChange(category, parseInt(ev.target.value)),
+                            className: 'slider'
+                          })
+                        ]),
+                        e('div', { key: 'scale', className: 'scale' }, [
+                          e('span', { key: '0' }, '0'),
+                          e('span', { key: '50' }, '50'),
+                          e('span', { key: '100' }, '100')
+                        ])
+                      ])
                     )
-                  ])
+                  ),
+                  e('hr', { key: 'divider', className: 'divider-rule' }),
+                  e('label', { key: 'comment-label', className: 'comment-label' }, 'Your Thoughts'),
+                  e('textarea', {
+                    key: 'comment',
+                    value: comment,
+                    onChange: (ev) => setComment(ev.target.value),
+                    placeholder: 'Share your observations on this object...',
+                    rows: 3
+                  }),
+                  e('button', {
+                    key: 'submit',
+                    onClick: handleSubmit,
+                    disabled: !allRated,
+                    className: 'submit-btn'
+                  }, allRated ? 'Submit Your Ratings' : 'Rate All Categories to Continue')
+                ])
+              : e('div', { key: 'voted', className: 'voted' }, [
+                  e('div', { key: 'mark', className: 'voted-mark' }, '📜'),
+                  e('p', { key: 'title', className: 'voted-title' }, 'Your verdict has been recorded.'),
+                  e('p', { key: 'subtitle', className: 'voted-subtitle' }, 'Return tomorrow for a new object to appraise.')
+                ])
+          ]),
+
+          // RANKINGS CARD
+          e('div', { key: 'rankings', className: 'card' }, [
+            e('div', { key: 'tl', className: 'brass-corner tl' }),
+            e('div', { key: 'tr', className: 'brass-corner tr' }),
+            e('div', { key: 'bl', className: 'brass-corner bl' }),
+            e('div', { key: 'br', className: 'brass-corner br' }),
+
+            e('h2', { key: 'title', className: 'rankings-title' }, 'All-Time Rankings'),
+
+            allRankings.length === 0
+              ? e('p', { key: 'empty', className: 'empty' }, 'The ledger is bare. Be the first to cast a verdict.')
+              : e('div', { key: 'list' },
+                  allRankings.map((item, index) =>
+                    e('div', { key: item.name }, [
+                      e('div', { key: 'item', className: 'ranking-item' }, [
+                        e('div', {
+                          key: 'rank',
+                          className: 'rank ' + (index === 0 ? 'rank-1' : index === 1 ? 'rank-2' : index === 2 ? 'rank-3' : 'rank-other')
+                        }, '#' + (index + 1)),
+                        e('div', { key: 'info', className: 'item-info' }, [
+                          e('div', { key: 'name', className: 'item-name' }, item.name),
+                          e('div', { key: 'meta', className: 'item-meta' }, item.totalVotes + ' ' + (item.totalVotes === 1 ? 'vote' : 'votes') + ' · ' + item.date)
+                        ]),
+                        e('span', { key: 'score', className: 'score' }, item.avgRating.toFixed(1))
+                      ]),
+                      e('button', {
+                        key: 'toggle',
+                        className: 'comments-toggle',
+                        onClick: () => toggleComments(item.name)
+                      }, [
+                        e('span', { key: 'text' },
+                          (objectComments[item.name] ? objectComments[item.name].length : '…') + ' ' +
+                          'comment' + ((objectComments[item.name] && objectComments[item.name].length !== 1) ? 's' : '')
+                        ),
+                        e('span', {
+                          key: 'arrow',
+                          className: 'arrow' + (expandedComments[item.name] ? ' open' : '')
+                        }, '▼')
+                      ]),
+                      expandedComments[item.name] && e('div', { key: 'comments', className: 'comments-list' },
+                        objectComments[item.name] && objectComments[item.name].length > 0
+                          ? objectComments[item.name].map((commentData, idx) =>
+                              e('div', { key: idx, className: 'comment-item' }, [
+                                e('div', { key: 'ratings', className: 'comment-ratings' },
+                                  CATEGORIES.map(cat =>
+                                    e('span', { key: cat, className: 'comment-rating' },
+                                      cat + ': ' + (commentData.ratings[cat] || 0)
+                                    )
+                                  )
+                                ),
+                                commentData.comment && e('div', { key: 'text', className: 'comment-text' }, commentData.comment),
+                                e('div', { key: 'date', className: 'comment-date' }, formatDate(commentData.timestamp))
+                              ])
+                            )
+                          : e('div', { key: 'no-comments', className: 'no-comments' }, 'No testimony recorded yet.')
+                      )
+                    ])
+                  )
                 )
-              )
           ])
         ])
       );
